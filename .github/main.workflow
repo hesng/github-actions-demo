@@ -1,6 +1,6 @@
 workflow "New workflow" {
   on = "pull_request"
-  resolves = ["Bundle Size"]
+  resolves = ["Build"]
 }
 
 action "Install" {

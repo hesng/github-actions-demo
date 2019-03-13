@@ -6,22 +6,22 @@ defaults: &defaults
 version: 2
 jobs:
   prepare:
-    <<: *defaults
+    <<: *defaultse
     steps:
       - checkout
       # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
+      # - restore_cache:
+      #     keys:
+      #     - v1-dependencies-{{ checksum "package.json" }}
       - run: npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-      - persist_to_workspace:
-          root: .
-          paths:
-            - node_modules
+      # - save_cache:
+      #     paths:
+      #       - node_modules
+      #     key: v1-dependencies-{{ checksum "package.json" }}
+      # - persist_to_workspace:
+      #     root: .
+      #     paths:
+      #       - node_modules
   build:
     <<: *defaults
     steps:

@@ -1,64 +1,30 @@
-defaults: &defaults
-  #working_directory: ./circleci
-  docker:
-    - image: circleci/node:8
-
 version: 2
 jobs:
-  prepare:
-    <<: *defaultse
-    steps:
-      - checkout
-      # Download and cache dependencies
-      # - restore_cache:
-      #     keys:
-      #     - v1-dependencies-{{ checksum "package.json" }}
-      - run: npm install
-      # - save_cache:
-      #     paths:
-      #       - node_modules
-      #     key: v1-dependencies-{{ checksum "package.json" }}
-      # - persist_to_workspace:
-      #     root: .
-      #     paths:
-      #       - node_modules
   build:
-    <<: *defaults
+    docker:
+      - image: circleci/node:8
     steps:
       - checkout
-      - attach_workspace:
-          at: .
-      - run: npm run build
-      - persist_to_workspace:
-          root: .
-          paths:
-            - build
-  test:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run: npm run test
-
-  deploy-prod:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - deploy:
-          name: Deploy to Production
+      - restore_cache: # special step to restore the dependency cache
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Setup Dependencies
+          command: npm install
+      - run:
+          name: Setup Code Climate test-reporter
           command: |
-              echo "iooooooo"
-workflows:
-  version: 2
-  build_accept_deploy:
-    jobs:
-      - prepare
-      - test:
-          requires:
-            - prepare
-      - build:
-          requires:
-            - test
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - save_cache: # special step to save the dependency cache
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      # - run: # run tests
+      #     name: Run Test and Coverage
+      #     command: |
+      #       ./cc-test-reporter before-build
+      #       npm test -- --coverage
+      #       ./cc-test-reporter after-build --exit-code $?
+      - run:
+          name: Build client app
+          command: npm run build
